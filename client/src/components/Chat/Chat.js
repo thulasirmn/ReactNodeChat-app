@@ -9,7 +9,7 @@ import Input from '../Input/Input';
 
 import './Chat.css';
 
-const ENDPOINT = 'https://chatappnodeserver.herokuapp.com/';
+const ENDPOINT = 'http://localhost:5000/';
 
 let socket;
 
@@ -19,6 +19,7 @@ const Chat = ({ location }) => {
   const [users, setUsers] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
 
   useEffect(() => {
     const { name, room } = queryString.parse(location.search);
@@ -37,6 +38,7 @@ const Chat = ({ location }) => {
   
   useEffect(() => {
     socket.on('message', message => {
+      console.log(message)
       setMessages(messages => [ ...messages, message ]);
     });
     
@@ -48,8 +50,18 @@ const Chat = ({ location }) => {
   const sendMessage = (event) => {
     event.preventDefault();
 
-    if(message) {
+    if(message && !selectedUser) {
       socket.emit('sendMessage', message, () => setMessage(''));
+    }
+    if(selectedUser) {
+      console.log("Private message",selectedUser);
+      socket.emit('sendPrivateMessage', {message,selectedUser}, () => setMessage(''));
+    }
+  }
+
+  const selectUser = (id) => {
+    if(id) {
+      setSelectedUser(id);
     }
   }
 
@@ -60,7 +72,7 @@ const Chat = ({ location }) => {
           <Messages messages={messages} name={name} />
           <Input message={message} setMessage={setMessage} sendMessage={sendMessage} />
       </div>
-      <TextContainer users={users}/>
+      <TextContainer users={users} selectedUser={selectUser}/>
     </div>
   );
 }

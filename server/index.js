@@ -32,8 +32,18 @@ io.on('connect', (socket) => {
 
   socket.on('sendMessage', (message, callback) => {
     const user = getUser(socket.id);
-
+    console.log(user)
     io.to(user.room).emit('message', { user: user.name, text: message });
+
+    callback();
+  });
+
+  socket.on('sendPrivateMessage', ({message, selectedUser}, callback) => {
+    const user = getUser(socket.id);
+    console.log(selectedUser, "Private ID")
+    console.log(socket.id, user, "sent user")
+    //io.to(socket.id).emit('message', { user: user.name, text: message });
+    io.to(selectedUser).to(user.id).emit('message', { user: user.name, text: message });
 
     callback();
   });
